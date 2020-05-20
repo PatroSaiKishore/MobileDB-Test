@@ -17,53 +17,16 @@ class NowPlaying: UIViewController {
     var initialDataToshow = [DataToShow]()
     var searchData = [DataToShow]()
     var searchBegins = false
+  
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print("Now Playing")
+        APIRequest()
         collectionView.register(UINib(nibName: "Cells", bundle: Bundle.main), forCellWithReuseIdentifier: "Cells")
         collectionLayout.scrollDirection = .vertical
         search.delegate = self
+        collectionView.reloadData()
     }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        APIRequest()
-    }
-    
-    //    func APIRequ(url: String, data: DataToShow) {
-    //        var initialData = [data]
-    //        var dataTask = URLSessionDataTask()
-    //        let url = "https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed"
-    //        var request = URLRequest(url: URL(string: url)!)
-    //        request.httpMethod = "GET"
-    //        dataTask = URLSession.shared.dataTask(with: request, completionHandler: { (data, _, error) in
-    //
-    //            if data != nil {
-    //
-    //                do {
-    //                    if  let jsonData = try JSONSerialization.jsonObject(with: data!, options: JSONSerialization.ReadingOptions.allowFragments) as? [String: Any] {
-    //
-    //                        if let array = jsonData["results"] as? NSArray {
-    //                            for each in 0..<array.count {
-    //                                if let description = array[each] as? NSDictionary {
-    //                                    initialData.append((DataToShow(title: description["title"] as! String, description: description["overview"] as! String, imagePath: description["poster_path"] as! String, dates: description[""])))
-    //                                }
-    //                            }
-    //                        }
-    //                        DispatchQueue.main.async {
-    //                            self.collectionView.reloadData()
-    //                        }
-    //                    }
-    //                } catch {
-    //                    fatalError()
-    //                }
-    //            }
-    //        })
-    //        dataTask.resume()
-    //    }
-    
     
     func APIRequest() {
         
@@ -154,6 +117,8 @@ extension NowPlaying: UICollectionViewDelegate,UICollectionViewDataSource, UICol
         
         if searchBegins == false {
             let datas = initialDataToshow[indexPath.row]
+            cell.index = indexPath
+            cell.delegate = self
             cell.titleLabel.text = datas.title
             cell.decsriptionLabel.text = datas.description
             let url = URL(string: "https://image.tmdb.org/t/p/w342"+datas.imagePath)
@@ -163,6 +128,8 @@ extension NowPlaying: UICollectionViewDelegate,UICollectionViewDataSource, UICol
             cell.backgroundColor = #colorLiteral(red: 0.9549800754, green: 0.7016262412, blue: 0.2667438984, alpha: 1)
         } else {
             let datas = searchData[indexPath.row]
+            cell.index = indexPath
+            cell.delegate = self
             cell.titleLabel.text = " "+" "+datas.title
             cell.decsriptionLabel.text = datas.description
             let url = URL(string: "https://image.tmdb.org/t/p/w342"+datas.imagePath)
@@ -184,4 +151,22 @@ extension NowPlaying: UICollectionViewDelegate,UICollectionViewDataSource, UICol
         nextPage.modalPresentationStyle = .fullScreen
         present(nextPage, animated: true, completion: nil)
     }
+}
+extension NowPlaying: CellDelegate {
+    func deleteCell(at row: Int) {
+        let index = IndexPath(row: row, section: 0)
+        collectionView.performBatchUpdates({
+            if searchBegins == false {
+                collectionView.deleteItems(at: [index])
+                initialDataToshow.remove(at: row)
+            } else {
+                collectionView.deleteItems(at: [index])
+                searchData.remove(at: row)
+            }
+        }) { (_) in
+            self.collectionView.reloadData()
+        }
+    }
+    
+    
 }

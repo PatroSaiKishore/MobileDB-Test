@@ -25,6 +25,7 @@ class TopRated: UIViewController {
         collectionView.register(UINib(nibName: "Cells", bundle: Bundle.main), forCellWithReuseIdentifier: "Cells")
         layout.scrollDirection = .vertical
         searchBar.delegate = self
+        collectionView.reloadData()
     }
     
     func APIRequest() {
@@ -117,6 +118,8 @@ extension TopRated: UICollectionViewDelegate,UICollectionViewDataSource, UIColle
         
         if searchBegins == false {
             let datas = initialDataToshow[indexPath.row]
+            cell.index = indexPath
+            cell.delegate = self
             cell.titleLabel.text = datas.title
             cell.decsriptionLabel.text = datas.description
             let url = URL(string: "https://image.tmdb.org/t/p/w342"+datas.imagePath)
@@ -126,6 +129,8 @@ extension TopRated: UICollectionViewDelegate,UICollectionViewDataSource, UIColle
             cell.backgroundColor = #colorLiteral(red: 0.9549800754, green: 0.7016262412, blue: 0.2667438984, alpha: 1)
         } else {
             let datas = filteredData[indexPath.row]
+            cell.index = indexPath
+            cell.delegate = self
             cell.titleLabel.text = datas.title
             cell.decsriptionLabel.text = datas.description
             let url = URL(string: "https://image.tmdb.org/t/p/w342"+datas.imagePath)
@@ -147,4 +152,22 @@ extension TopRated: UICollectionViewDelegate,UICollectionViewDataSource, UIColle
         nextPage.modalPresentationStyle = .fullScreen
         present(nextPage, animated: true, completion: nil)
     }
+}
+extension TopRated: CellDelegate {
+    func deleteCell(at row: Int) {
+        let index = IndexPath(row: row, section: 0)
+        collectionView.performBatchUpdates({
+            if searchBegins == true {
+                collectionView.deleteItems(at: [index])
+                filteredData.remove(at: row)
+            } else {
+                collectionView.deleteItems(at: [index])
+                initialDataToshow.remove(at: row)
+            }
+        }) { (_) in
+            self.collectionView.reloadData()
+        }
+    }
+    
+    
 }

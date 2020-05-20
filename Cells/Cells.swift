@@ -14,9 +14,18 @@ class Cells: UICollectionViewCell {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var decsriptionLabel: UILabel!
     @IBOutlet weak var image: UIImageView!
+    var delegate: CellDelegate!
+    var index: IndexPath!
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
     }
+    
+    @IBAction func onToClickToDelete(sendr: UIButton) {
+        delegate.deleteCell(at: index.row)
+    }
+}
 
+protocol CellDelegate {
+    func deleteCell(at row: Int)
 }
